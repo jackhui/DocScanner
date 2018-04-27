@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        DrawView drawView = (DrawView) findViewById(R.id.draw_view);
     }
 
     @Override

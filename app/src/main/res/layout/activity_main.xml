@@ -14,5 +14,9 @@
         android:layout_height="wrap_content"
         android:text="@string/show_camera_dialog"/>
 
+    <com.tradelink.scandocapp.DrawView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/draw_view" />
 
 </RelativeLayout>
