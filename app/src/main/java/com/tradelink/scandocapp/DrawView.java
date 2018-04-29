@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -29,6 +30,7 @@ public class DrawView extends View {
     Paint paint;
     Canvas canvas;
     private Bitmap mDocument;
+    private int canvasW, canvasH;
 
     public DrawView(Context context) {
         super(context);
@@ -51,8 +53,15 @@ public class DrawView extends View {
     // the method that draws the balls
     @Override
     protected void onDraw(Canvas canvas) {
+        paint.setColor(Color.RED);
+        paint.setAlpha(80);
+        canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), paint);
+        paint.setAlpha(256);
         if(points[3]==null) //point4 null when user did not touch and move on screen.
             return;
+        canvasW = canvas.getWidth();
+        canvasH = canvas.getHeight();
+        Log.d("DrawView", "canvas width " + canvas.getWidth() + " height " + canvas.getHeight());
         int left, top, right, bottom;
         left = points[0].x;
         top = points[0].y;
@@ -172,9 +181,12 @@ public class DrawView extends View {
                 break;
 
             case MotionEvent.ACTION_MOVE: // touch drag with the ball
+                Log.d("motion ", "x " + X + " y " + Y + " canvas w " + canvas.getWidth() + " h " + canvas.getHeight());
+                if (X + 50 > canvasW || Y + 50 > canvasH) {
+                    break;
+                }
 
-
-                if (balID > -1) {
+                if (balID > -1 && balID < 4) {
                     // move the balls the same as the finger
                     colorballs.get(balID).setX(X);
                     colorballs.get(balID).setY(Y);

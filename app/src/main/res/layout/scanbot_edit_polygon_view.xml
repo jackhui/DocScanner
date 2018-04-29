@@ -20,6 +20,16 @@
         android:text="Back"
         android:visibility="gone"/>
 
+    <Button
+        android:id="@+id/doneButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:text="Done"
+        android:visibility="gone"/>
+
     <net.doo.snap.ui.EditPolygonImageView
         android:id="@+id/polygonView"
         android:layout_width="match_parent"

@@ -10,13 +10,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
-import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.tradelink.scandocapp.utils.ImageContainer;
+
+import com.tradelink.scandocapp.utils.BitmapHelper;
 
 import net.doo.snap.camera.AutoSnappingController;
 import net.doo.snap.camera.CameraOpenCallback;
@@ -161,16 +161,24 @@ public class CameraDialogFragment extends DialogFragment implements PictureCallb
             originalBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.getWidth(), originalBitmap.getHeight(), matrix, false);
         }
 
-        ImageContainer imageContainer = ImageContainer.getInstance();
-        imageContainer.setOrigin(originalBitmap);
+//        ImageContainer imageContainer = ImageContainer.getInstance();
+//        imageContainer.setOrigin(originalBitmap);
 
-        createFileFromBitmap(originalBitmap, "original");
+        String filePath = "";
+
+        try {
+            filePath = BitmapHelper.saveToFile(getActivity().getApplicationContext(), originalBitmap, "origin.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        createFileFromBitmap(originalBitmap, "original");
         // Run document detection on original image:
         final ContourDetector detector = new ContourDetector();
         detector.detect(originalBitmap);
         final Bitmap documentImage = detector.processImageAndRelease(originalBitmap, detector.getPolygonF(), ContourDetector.IMAGE_FILTER_NONE);
 
-        imageContainer.setDocument(documentImage);
+//        imageContainer.setDocument(documentImage);
         documentImage.recycle();
 //        createFileFromBitmap(documentImage, "document");
         /*resultView.post(new Runnable() {
@@ -183,7 +191,9 @@ public class CameraDialogFragment extends DialogFragment implements PictureCallb
         });*/
 //        Log.d("detectedImage", "width " + documentImage.getWidth() + " height " + documentImage.getHeight());
         Intent intent = new Intent(getActivity(), EditPolygonActivity.class);
-        startActivity(intent);
+        intent.putExtra(CAPTURED_IMAGE, filePath);
+        startActivityForResult(intent, MainActivity.RESPONSE_CODE);
+        this.dismiss();
     }
 
     public static File createFileFromBitmap(Bitmap bitmap, String fileName) {

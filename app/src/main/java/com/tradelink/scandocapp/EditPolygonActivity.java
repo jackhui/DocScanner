@@ -1,6 +1,8 @@
 package com.tradelink.scandocapp;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
@@ -13,7 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.tradelink.scandocapp.utils.ImageContainer;
+import com.tradelink.scandocapp.utils.BitmapHelper;
 
 import net.doo.snap.lib.detector.ContourDetector;
 import net.doo.snap.lib.detector.DetectionResult;
@@ -21,6 +23,7 @@ import net.doo.snap.lib.detector.Line2D;
 import net.doo.snap.ui.EditPolygonImageView;
 import net.doo.snap.ui.MagnifierView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -33,7 +36,8 @@ public class EditPolygonActivity extends AppCompatActivity {
     private ImageView resultImageView;
     private Button cropButton;
     private Button backButton;
-    private ImageContainer mImageContainer;
+    private Button doneButton;
+    private String imagePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,42 +47,71 @@ public class EditPolygonActivity extends AppCompatActivity {
 
         getSupportActionBar().hide();
 
-        mImageContainer = ImageContainer.getInstance();
+        Bitmap origin;
 
-        editPolygonView = (EditPolygonImageView) findViewById(R.id.polygonView);
+        if (getIntent().hasExtra(CameraDialogFragment.CAPTURED_IMAGE)) {
+            Log.d("origin", getIntent().getStringExtra(CameraDialogFragment.CAPTURED_IMAGE));
+            origin = BitmapHelper.getBitmapFromStorage(getIntent().getStringExtra(CameraDialogFragment.CAPTURED_IMAGE));
+
+            editPolygonView = (EditPolygonImageView) findViewById(R.id.polygonView);
+            if (!origin.isRecycled()) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                if (origin.getWidth() > origin.getHeight()) {
+                    origin = Bitmap.createBitmap(origin, 0, 0, origin.getWidth(), origin.getHeight(), matrix, false);
+                }
+                editPolygonView.setImageBitmap(Bitmap.createBitmap(origin));
+                originalBitmap = origin;
+            } else {
+                editPolygonView.setImageResource(R.drawable.test_receipt);
+                originalBitmap = ((BitmapDrawable) editPolygonView.getDrawable()).getBitmap();
+            }
+
+
 //            editPolygonView.setImageResource(R.drawable.test_receipt);
-        editPolygonView.setImageBitmap(mImageContainer.getOrigin());
-        originalBitmap = ((BitmapDrawable) editPolygonView.getDrawable()).getBitmap();
+//        editPolygonView.setImageBitmap(mImageContainer.getOrigin());
+//        originalBitmap = mImageContainer.getOrigin();
 
-        magnifierView = (MagnifierView) findViewById(R.id.magnifier);
-        // MagifierView should be set up every time when editPolygonView is set with new image
-        magnifierView.setupMagnifier(editPolygonView);
 
-        resultImageView = (ImageView) findViewById(R.id.resultImageView);
-        resultImageView.setVisibility(View.GONE);
+            magnifierView = (MagnifierView) findViewById(R.id.magnifier);
+            // MagifierView should be set up every time when editPolygonView is set with new image
+            magnifierView.setupMagnifier(editPolygonView);
 
-        cropButton = (Button) findViewById(R.id.cropButton);
-        cropButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                crop();
-            }
-        });
+            resultImageView = (ImageView) findViewById(R.id.resultImageView);
+            resultImageView.setVisibility(View.GONE);
 
-        backButton = (Button) findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                backButton.setVisibility(View.GONE);
-                resultImageView.setVisibility(View.GONE);
+            cropButton = (Button) findViewById(R.id.cropButton);
+            cropButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    crop();
+                }
+            });
 
-                editPolygonView.setVisibility(View.VISIBLE);
-                cropButton.setVisibility(View.VISIBLE);
-            }
-        });
+            backButton = (Button) findViewById(R.id.backButton);
+            backButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    backButton.setVisibility(View.GONE);
+                    resultImageView.setVisibility(View.GONE);
 
-        new InitImageViewTask().executeOnExecutor(Executors.newSingleThreadExecutor(), originalBitmap);
+                    editPolygonView.setVisibility(View.VISIBLE);
+                    cropButton.setVisibility(View.VISIBLE);
+                }
+            });
 
+            doneButton = findViewById(R.id.doneButton);
+            doneButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent();
+                    intent.putExtra(CameraDialogFragment.CAPTURED_IMAGE, imagePath);
+                    setResultAndFinish(intent);
+                }
+            });
+
+            new InitImageViewTask().executeOnExecutor(Executors.newSingleThreadExecutor(), originalBitmap);
+        }
     }
 
     private void crop() {
@@ -86,15 +119,25 @@ public class EditPolygonActivity extends AppCompatActivity {
         final Bitmap documentImage = new ContourDetector().processImageF(
                 originalBitmap, editPolygonView.getPolygon(), ContourDetector.IMAGE_FILTER_NONE);
 
-        mImageContainer.setDocument(documentImage);
-        documentImage.recycle();
-
         editPolygonView.setVisibility(View.GONE);
         cropButton.setVisibility(View.GONE);
 
-        resultImageView.setImageBitmap(mImageContainer.getDocument());
+        resultImageView.setImageBitmap(documentImage);
         resultImageView.setVisibility(View.VISIBLE);
         backButton.setVisibility(View.VISIBLE);
+        doneButton.setVisibility(View.VISIBLE);
+
+        try {
+            imagePath = BitmapHelper.saveToFile(getApplicationContext(), documentImage,"document.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+            imagePath = "null";
+        }
+    }
+
+    private void setResultAndFinish(Intent intent) {
+        this.setResult(RESULT_OK, intent);
+        this.finish();
     }
 
     /**
@@ -142,5 +185,4 @@ public class EditPolygonActivity extends AppCompatActivity {
             this.polygon = polygon;
         }
     }
-
 }
