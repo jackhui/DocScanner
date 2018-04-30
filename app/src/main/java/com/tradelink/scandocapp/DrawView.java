@@ -119,8 +119,7 @@ public class DrawView extends View {
                 canvas.drawText("" + (i+1), ball.getX(), ball.getY(), paint);
             }
         }
-
-
+        invalidate();
     }
 
     // events when touching the screen
@@ -156,8 +155,8 @@ public class DrawView extends View {
                     rect.setGroupID(1);
                     // declare each ball with the TLKVertex class
 
-                    for (Point pt : points) {
-                        rect.getVertices().add(new TLKVertex(getContext(), R.drawable.ui_crop_corner_handle, pt));
+                    for (int i=0; i<points.length; i++) {
+                        rect.getVertices().add(new TLKVertex(getContext(), R.drawable.ui_crop_corner_handle, points[i], i));
                     }
                     rects.add(rect);
                 } else {
@@ -184,7 +183,7 @@ public class DrawView extends View {
                             if (radCircle < ball.getWidthOfBall()) {
 
                                 Log.d("ActionDown", "radCircle < ball.width groupID " + rects.get(j).getGroupID());
-                                rects.get(j).setBalID(ball.getID() % 4);
+                                rects.get(j).setBalID(ball.getID());
                                 Log.d("ActionDown", "radBalID " + rects.get(j).getBalID());
                                 if (rects.get(j).getBalID() == 1 || rects.get(j).getBalID() == 3) {
                                     rects.get(j).setGroupID(2);
@@ -217,11 +216,9 @@ public class DrawView extends View {
                     break;
                 }
                 for(int j=0; j<rects.size(); j++) {
-                    /*if(!rects.get(j).isCollided())
-                        continue;*/
                     Log.d("resize", " " + rectangleResize);
                     if (!rects.get(j).isCollided() || rectangleResize) {
-                        rects.get(j).setBalID(rects.get(j).getBalID() % 4);
+                        rects.get(j).setBalID(rects.get(j).getBalID());
                         Log.d("ActionMove", "balID " + rects.get(j).getBalID() + " " + rects.get(j).getGroupID());
                         if (rects.get(j).getBalID() > -1 && rects.get(j).getBalID() < 4) {
                             // move the balls the same as the finger
@@ -277,18 +274,18 @@ public class DrawView extends View {
     private boolean inRectangle(ArrayList<TLKVertex> balls, int x, int y) {
         int leftX, rightX, topY, bottomY;
         if (balls.get(0).getX() > balls.get(3).getX()) {
-            leftX = balls.get(3).getX() + 50;
-            rightX = balls.get(0).getX() - 50;
+            leftX = balls.get(3).getX();
+            rightX = balls.get(0).getX();
         } else {
-            leftX = balls.get(0).getX() + 50;
-            rightX = balls.get(3).getX() - 50;
+            leftX = balls.get(0).getX();
+            rightX = balls.get(3).getX();
         }
         if (balls.get(0).getY() > balls.get(1).getY()) {
-            topY = balls.get(1).getY() + 50;
-            bottomY = balls.get(0).getY() - 50;
+            topY = balls.get(1).getY();
+            bottomY = balls.get(0).getY();
         } else {
-            topY = balls.get(0).getY() + 50;
-            bottomY = balls.get(1).getY() - 50;
+            topY = balls.get(0).getY();
+            bottomY = balls.get(1).getY();
         }
         return leftX < x && x < rightX && topY < y && y < bottomY;
     }
@@ -300,26 +297,26 @@ public class DrawView extends View {
     public void addBox() {
         TLKRect rect = new TLKRect();
         points[0] = new Point();
-        points[0].x = previousX;
-        points[0].y = previousY;
+        points[0].x = 0;
+        points[0].y = 0;
 
         points[1] = new Point();
-        points[1].x = previousX;
-        points[1].y = previousY + 50;
+        points[1].x = 0;
+        points[1].y = 200;
 
         points[2] = new Point();
-        points[2].x = previousX + 50;
-        points[2].y = previousY + 50;
+        points[2].x = 200;
+        points[2].y = 200;
 
         points[3] = new Point();
-        points[3].x = previousX + 50;
-        points[3].y = previousY;
+        points[3].x = 200;
+        points[3].y = 0;
 
         rect.setBalID(2);
         rect.setGroupID(1);
         // declare each ball with the TLKVertex class
-        for (Point pt : points) {
-            rect.getVertices().add(new TLKVertex(getContext(), R.drawable.ui_crop_corner_handle, pt));
+        for (int i=0; i<points.length; i++) {
+            rect.getVertices().add(new TLKVertex(getContext(), R.drawable.ui_crop_corner_handle, points[i], i));
         }
         rects.add(rect);
     }

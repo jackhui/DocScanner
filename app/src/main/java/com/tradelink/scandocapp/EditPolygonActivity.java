@@ -3,6 +3,7 @@ package com.tradelink.scandocapp;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.support.v4.view.WindowCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -116,7 +118,7 @@ public class EditPolygonActivity extends AppCompatActivity {
 
     private void crop() {
         // crop & warp image by selected polygon (editPolygonView.getPolygon())
-        final Bitmap documentImage = new ContourDetector().processImageF(
+        Bitmap documentImage = new ContourDetector().processImageF(
                 originalBitmap, editPolygonView.getPolygon(), ContourDetector.IMAGE_FILTER_NONE);
 
         editPolygonView.setVisibility(View.GONE);
@@ -126,6 +128,12 @@ public class EditPolygonActivity extends AppCompatActivity {
         resultImageView.setVisibility(View.VISIBLE);
         backButton.setVisibility(View.VISIBLE);
         doneButton.setVisibility(View.VISIBLE);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        documentImage = Bitmap.createScaledBitmap(documentImage, size.x,
+                size.x * documentImage.getHeight() / documentImage.getWidth(), false);
 
         try {
             imagePath = BitmapHelper.saveToFile(getApplicationContext(), documentImage,"document.jpg");

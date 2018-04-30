@@ -7,14 +7,13 @@ import android.graphics.Point;
 
 public class TLKVertex {
 
-    Bitmap bitmap;
-    Context mContext;
-    Point point;
-    int id;
-    static int count = 0;
+    private Bitmap bitmap;
+    private Context mContext;
+    private Point point;
+    private int id;
 
-    public TLKVertex(Context context, int resourceId, Point point) {
-        this.id = count++;
+    public TLKVertex(Context context, int resourceId, Point point, int id) {
+        this.id = id;
         bitmap = BitmapFactory.decodeResource(context.getResources(),
                 resourceId);
         mContext = context;
