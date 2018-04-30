@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,15 +14,17 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.tradelink.scandocapp.model.Vertex;
+
 public class DrawView extends View {
 
     Point[] points = new Point[4];
 
     /**
-     * point1 and point 3 are of same group and same as point 2 and point4
+     * point 1 and point 3 are of same group and same as point 2 and point4
      */
     int groupId = -1;
-    private ArrayList<ColorBall> colorballs = new ArrayList<ColorBall>();
+    private ArrayList<Vertex> vertices = new ArrayList<>();
     // array that holds the balls
     private int balID = 0;
     // variable to know what ball is being dragged
@@ -32,7 +33,7 @@ public class DrawView extends View {
     private Bitmap mDocument;
     private int canvasW, canvasH;
     private int previousX = -1, previousY = -1;
-    private boolean rectangleResize = false;
+    private boolean rectangleResize = false, insideRectangle = false;;
 
     public DrawView(Context context) {
         super(context);
@@ -85,19 +86,19 @@ public class DrawView extends View {
         paint.setColor(Color.parseColor("#AADB1255"));
         paint.setStrokeWidth(2);
         canvas.drawRect(
-                left + colorballs.get(0).getWidthOfBall() / 2,
-                top + colorballs.get(0).getWidthOfBall() / 2,
-                right + colorballs.get(2).getWidthOfBall() / 2,
-                bottom + colorballs.get(2).getWidthOfBall() / 2, paint);
+                left + vertices.get(0).getWidthOfBall() / 2,
+                top + vertices.get(0).getWidthOfBall() / 2,
+                right + vertices.get(2).getWidthOfBall() / 2,
+                bottom + vertices.get(2).getWidthOfBall() / 2, paint);
         //fill the rectangle
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.parseColor("#55DB1255"));
         paint.setStrokeWidth(0);
         canvas.drawRect(
-                left + colorballs.get(0).getWidthOfBall() / 2,
-                top + colorballs.get(0).getWidthOfBall() / 2,
-                right + colorballs.get(2).getWidthOfBall() / 2,
-                bottom + colorballs.get(2).getWidthOfBall() / 2, paint);
+                left + vertices.get(0).getWidthOfBall() / 2,
+                top + vertices.get(0).getWidthOfBall() / 2,
+                right + vertices.get(2).getWidthOfBall() / 2,
+                bottom + vertices.get(2).getWidthOfBall() / 2, paint);
 
         //draw the corners
         BitmapDrawable bitmap = new BitmapDrawable();
@@ -105,8 +106,8 @@ public class DrawView extends View {
         paint.setColor(Color.BLUE);
         paint.setTextSize(18);
         paint.setStrokeWidth(0);
-        for (int i =0; i < colorballs.size(); i ++) {
-            ColorBall ball = colorballs.get(i);
+        for (int i = 0; i < vertices.size(); i ++) {
+            Vertex ball = vertices.get(i);
             canvas.drawBitmap(ball.getBitmap(), ball.getX(), ball.getY(),
                     paint);
 
@@ -120,7 +121,7 @@ public class DrawView extends View {
 
         int X = (int) event.getX();
         int Y = (int) event.getY();
-        boolean insideRectangle = false;
+
         switch (eventaction) {
             case MotionEvent.ACTION_DOWN: // touch down so check if the finger is on
                 // a ball
@@ -146,14 +147,14 @@ public class DrawView extends View {
                     groupId = 1;
                     // declare each ball with the ColorBall class
                     for (Point pt : points) {
-                        colorballs.add(new ColorBall(getContext(), R.drawable.ui_crop_corner_handle, pt));
+                        vertices.add(new Vertex(getContext(), R.drawable.ui_crop_corner_handle, pt));
                     }
                 } else {
                     //resize rectangle
                     balID = -1;
                     groupId = -1;
-                    for (int i = colorballs.size()-1; i>=0; i--) {
-                        ColorBall ball = colorballs.get(i);
+                    for (int i = vertices.size()-1; i>=0; i--) {
+                        Vertex ball = vertices.get(i);
                         // check if inside the bounds of the ball (circle)
                         // get the center for the ball
                         int centerX = ball.getX() + ball.getWidthOfBall();
@@ -182,6 +183,9 @@ public class DrawView extends View {
                 }
                 previousX = X;
                 previousY = Y;
+                if(vertices.size() != 0) {
+                    insideRectangle = inRectangle(vertices, X, Y);
+                }
                 break;
 
             case MotionEvent.ACTION_MOVE: // touch drag with the ball
@@ -190,42 +194,38 @@ public class DrawView extends View {
                     break;
                 }
 
-                if(colorballs.size() != 0) {
-                    insideRectangle = inRectangle(colorballs, X, Y);
-                }
-
                 if (!insideRectangle || rectangleResize) {
                     Log.d("ActionMove", "not enter");
                     if (balID > -1 && balID < 4) {
                         // move the balls the same as the finger
-                        colorballs.get(balID).setX(X);
-                        colorballs.get(balID).setY(Y);
+                        vertices.get(balID).setX(X);
+                        vertices.get(balID).setY(Y);
 
                         paint.setColor(Color.CYAN);
                         if (groupId == 1) {
-                            colorballs.get(1).setX(colorballs.get(0).getX());
-                            colorballs.get(1).setY(colorballs.get(2).getY());
-                            colorballs.get(3).setX(colorballs.get(2).getX());
-                            colorballs.get(3).setY(colorballs.get(0).getY());
+                            vertices.get(1).setX(vertices.get(0).getX());
+                            vertices.get(1).setY(vertices.get(2).getY());
+                            vertices.get(3).setX(vertices.get(2).getX());
+                            vertices.get(3).setY(vertices.get(0).getY());
                         } else {
-                            colorballs.get(0).setX(colorballs.get(1).getX());
-                            colorballs.get(0).setY(colorballs.get(3).getY());
-                            colorballs.get(2).setX(colorballs.get(3).getX());
-                            colorballs.get(2).setY(colorballs.get(1).getY());
+                            vertices.get(0).setX(vertices.get(1).getX());
+                            vertices.get(0).setY(vertices.get(3).getY());
+                            vertices.get(2).setX(vertices.get(3).getX());
+                            vertices.get(2).setY(vertices.get(1).getY());
                         }
 
                         invalidate();
                     }
                 } else {
                     if (previousX != -1 && previousY != -1) {
-                        colorballs.get(0).setX(colorballs.get(0).getX() + (X - previousX));
-                        colorballs.get(0).setY(colorballs.get(0).getY() + (Y - previousY));
-                        colorballs.get(1).setX(colorballs.get(1).getX() + (X - previousX));
-                        colorballs.get(1).setY(colorballs.get(1).getY() + (Y - previousY));
-                        colorballs.get(2).setX(colorballs.get(2).getX() + (X - previousX));
-                        colorballs.get(2).setY(colorballs.get(2).getY() + (Y - previousY));
-                        colorballs.get(3).setX(colorballs.get(3).getX() + (X - previousX));
-                        colorballs.get(3).setY(colorballs.get(3).getY() + (Y - previousY));
+                        vertices.get(0).setX(vertices.get(0).getX() + (X - previousX));
+                        vertices.get(0).setY(vertices.get(0).getY() + (Y - previousY));
+                        vertices.get(1).setX(vertices.get(1).getX() + (X - previousX));
+                        vertices.get(1).setY(vertices.get(1).getY() + (Y - previousY));
+                        vertices.get(2).setX(vertices.get(2).getX() + (X - previousX));
+                        vertices.get(2).setY(vertices.get(2).getY() + (Y - previousY));
+                        vertices.get(3).setX(vertices.get(3).getX() + (X - previousX));
+                        vertices.get(3).setY(vertices.get(3).getY() + (Y - previousY));
                     }
 
                     previousX = X;
@@ -247,7 +247,7 @@ public class DrawView extends View {
 
     }
 
-    private boolean inRectangle(ArrayList<ColorBall> balls, int x, int y) {
+    private boolean inRectangle(ArrayList<Vertex> balls, int x, int y) {
         int leftX, rightX, topY, bottomY;
         if (balls.get(0).getX() > balls.get(3).getX()) {
             leftX = balls.get(3).getX() + 50;
@@ -268,55 +268,5 @@ public class DrawView extends View {
 
     public void setDocument(Bitmap document) {
         mDocument = document;
-    }
-
-
-    public static class ColorBall {
-
-        Bitmap bitmap;
-        Context mContext;
-        Point point;
-        int id;
-        static int count = 0;
-
-        public ColorBall(Context context, int resourceId, Point point) {
-            this.id = count++;
-            bitmap = BitmapFactory.decodeResource(context.getResources(),
-                    resourceId);
-            mContext = context;
-            this.point = point;
-        }
-
-        public int getWidthOfBall() {
-            return bitmap.getWidth();
-        }
-
-        public int getHeightOfBall() {
-            return bitmap.getHeight();
-        }
-
-        public Bitmap getBitmap() {
-            return bitmap;
-        }
-
-        public int getX() {
-            return point.x;
-        }
-
-        public int getY() {
-            return point.y;
-        }
-
-        public int getID() {
-            return id;
-        }
-
-        public void setX(int x) {
-            point.x = x;
-        }
-
-        public void setY(int y) {
-            point.y = y;
-        }
     }
 }
