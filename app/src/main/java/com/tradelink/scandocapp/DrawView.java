@@ -14,17 +14,17 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.tradelink.scandocapp.model.Vertex;
+import com.tradelink.scandocapp.model.TLKVertex;
 
 public class DrawView extends View {
 
     Point[] points = new Point[4];
 
     /**
-     * point 1 and point 3 are of same group and same as point 2 and point4
+     * point1 and point 3 are of same group and same as point 2 and point4
      */
     int groupId = -1;
-    private ArrayList<Vertex> vertices = new ArrayList<>();
+    private ArrayList<TLKVertex> vertices = new ArrayList<>();
     // array that holds the balls
     private int balID = 0;
     // variable to know what ball is being dragged
@@ -33,7 +33,8 @@ public class DrawView extends View {
     private Bitmap mDocument;
     private int canvasW, canvasH;
     private int previousX = -1, previousY = -1;
-    private boolean rectangleResize = false, insideRectangle = false;;
+    private boolean rectangleResize = false;
+    boolean insideRectangle = false;
 
     public DrawView(Context context) {
         super(context);
@@ -60,21 +61,23 @@ public class DrawView extends View {
         paint.setAlpha(80);
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), paint);
         paint.setAlpha(256);*/
-        if(points[3]==null) //point4 null when user did not touch and move on screen.
+        if(vertices.size() < 4) //point4 null when user did not touch and move on screen.
             return;
+
         canvasW = canvas.getWidth();
         canvasH = canvas.getHeight();
         Log.d("DrawView", "canvas width " + canvas.getWidth() + " height " + canvas.getHeight());
         int left, top, right, bottom;
-        left = points[0].x;
-        top = points[0].y;
-        right = points[0].x;
-        bottom = points[0].y;
-        for (int i = 1; i < points.length; i++) {
-            left = left > points[i].x ? points[i].x:left;
-            top = top > points[i].y ? points[i].y:top;
-            right = right < points[i].x ? points[i].x:right;
-            bottom = bottom < points[i].y ? points[i].y:bottom;
+
+        left = vertices.get(0).getX();
+        top = vertices.get(0).getY();
+        right = vertices.get(0).getX();
+        bottom = vertices.get(0).getY();
+        for (int i = 1; i < vertices.size(); i++) {
+            left = left >vertices.get(i).getX() ? vertices.get(i).getX():left;
+            top = top > vertices.get(i).getY() ? vertices.get(i).getY():top;
+            right = right < vertices.get(i).getX() ? vertices.get(i).getX():right;
+            bottom = bottom < vertices.get(i).getY() ? vertices.get(i).getY():bottom;
         }
         paint.setAntiAlias(true);
         paint.setDither(true);
@@ -83,7 +86,7 @@ public class DrawView extends View {
 
         //draw stroke
         paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.parseColor("#AADB1255"));
+        paint.setColor(Color.parseColor("#AA000000"));
         paint.setStrokeWidth(2);
         canvas.drawRect(
                 left + vertices.get(0).getWidthOfBall() / 2,
@@ -92,7 +95,7 @@ public class DrawView extends View {
                 bottom + vertices.get(2).getWidthOfBall() / 2, paint);
         //fill the rectangle
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.parseColor("#55DB1255"));
+        paint.setColor(Color.parseColor("#25404040"));
         paint.setStrokeWidth(0);
         canvas.drawRect(
                 left + vertices.get(0).getWidthOfBall() / 2,
@@ -107,12 +110,13 @@ public class DrawView extends View {
         paint.setTextSize(18);
         paint.setStrokeWidth(0);
         for (int i = 0; i < vertices.size(); i ++) {
-            Vertex ball = vertices.get(i);
+            TLKVertex ball = vertices.get(i);
             canvas.drawBitmap(ball.getBitmap(), ball.getX(), ball.getY(),
                     paint);
 
             canvas.drawText("" + (i+1), ball.getX(), ball.getY(), paint);
         }
+
     }
 
     // events when touching the screen
@@ -145,16 +149,16 @@ public class DrawView extends View {
 
                     balID = 2;
                     groupId = 1;
-                    // declare each ball with the ColorBall class
+                    // declare each ball with the TLKVertex class
                     for (Point pt : points) {
-                        vertices.add(new Vertex(getContext(), R.drawable.ui_crop_corner_handle, pt));
+                        vertices.add(new TLKVertex(getContext(), R.drawable.ui_crop_corner_handle, pt));
                     }
                 } else {
                     //resize rectangle
                     balID = -1;
                     groupId = -1;
                     for (int i = vertices.size()-1; i>=0; i--) {
-                        Vertex ball = vertices.get(i);
+                        TLKVertex ball = vertices.get(i);
                         // check if inside the bounds of the ball (circle)
                         // get the center for the ball
                         int centerX = ball.getX() + ball.getWidthOfBall();
@@ -247,7 +251,7 @@ public class DrawView extends View {
 
     }
 
-    private boolean inRectangle(ArrayList<Vertex> balls, int x, int y) {
+    private boolean inRectangle(ArrayList<TLKVertex> balls, int x, int y) {
         int leftX, rightX, topY, bottomY;
         if (balls.get(0).getX() > balls.get(3).getX()) {
             leftX = balls.get(3).getX() + 50;
@@ -269,4 +273,9 @@ public class DrawView extends View {
     public void setDocument(Bitmap document) {
         mDocument = document;
     }
+
+    public void addBox() {
+
+    }
+
 }

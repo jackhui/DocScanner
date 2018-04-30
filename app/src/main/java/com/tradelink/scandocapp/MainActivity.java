@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         float a4Width = 210, a4Height = 297;
-        DrawView drawView = (DrawView) findViewById(R.id.draw_view);
+        final DrawView drawView = (DrawView) findViewById(R.id.draw_view);
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -59,6 +60,13 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MainActivity", "width " + size.x + " height " + size.y);
         drawView.setLayoutParams(new RelativeLayout.LayoutParams(size.x, (int) (a4Height * ratio)));
+        Button addBoxBtn = findViewById(R.id.add_box_btn);
+        addBoxBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawView.addBox();
+            }
+        });
     }
 
     @Override

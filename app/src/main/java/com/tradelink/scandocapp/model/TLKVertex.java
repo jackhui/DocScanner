@@ -5,15 +5,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 
-public class Vertex {
+public class TLKVertex {
 
-    private Bitmap bitmap;
-    private Context mContext;
-    private Point point;
-    private int id;
-    private int count = 0;
+    Bitmap bitmap;
+    Context mContext;
+    Point point;
+    int id;
+    static int count = 0;
 
-    public Vertex(Context context, int resourceId, Point point) {
+    public TLKVertex(Context context, int resourceId, Point point) {
         this.id = count++;
         bitmap = BitmapFactory.decodeResource(context.getResources(),
                 resourceId);
