@@ -4,13 +4,15 @@ import java.util.ArrayList;
 
 public class TLKRect {
     private ArrayList<TLKVertex> vertices;
-    private boolean collided;
+    private boolean inRectangle;
     private int balID;
     private int groupID;
+    private boolean movable;
 
     public TLKRect() {
-        collided = false;
+        inRectangle = false;
         vertices = new ArrayList<>();
+        movable = false;
     }
 
     public TLKRect(ArrayList<TLKVertex> vertices) {
@@ -25,12 +27,12 @@ public class TLKRect {
         this.vertices = vertices;
     }
 
-    public void setCollided(boolean collided) {
-        this.collided = collided;
+    public void setInRectangle(boolean inRectangle) {
+        this.inRectangle = inRectangle;
     }
 
-    public boolean isCollided() {
-        return collided;
+    public boolean isInRectangle() {
+        return inRectangle;
     }
 
     public int getBalID() {
@@ -47,5 +49,13 @@ public class TLKRect {
 
     public void setGroupID(int groupID) {
         this.groupID = groupID;
+    }
+
+    public void setMovable(boolean movable) {
+        this.movable = movable;
+    }
+
+    public boolean isMovable() {
+        return this.movable;
     }
 }
