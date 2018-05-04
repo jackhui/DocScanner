@@ -7,12 +7,10 @@ public class TLKRect {
     private boolean inRectangle;
     private int balID;
     private int groupID;
-    private boolean movable;
 
     public TLKRect() {
         inRectangle = false;
         vertices = new ArrayList<>();
-        movable = false;
     }
 
     public TLKRect(ArrayList<TLKVertex> vertices) {
@@ -51,11 +49,27 @@ public class TLKRect {
         this.groupID = groupID;
     }
 
-    public void setMovable(boolean movable) {
-        this.movable = movable;
+    public TLKVertex getLeftTop() {
+        if (vertices.get(0).getX() < vertices.get(3).getX()) {
+            if (vertices.get(0).getY() < vertices.get(1).getY()) {
+                return vertices.get(0);
+            } else {
+                return vertices.get(1);
+            }
+        } else {
+            if (vertices.get(0).getY() < vertices.get(1).getY()) {
+                return vertices.get(3);
+            } else {
+                return vertices.get(2);
+            }
+        }
     }
 
-    public boolean isMovable() {
-        return this.movable;
+    public int getWidth() {
+        return Math.abs(vertices.get(0).getX() - vertices.get(3).getX());
+    }
+
+    public int getHeight() {
+        return Math.abs(vertices.get(0).getY() - vertices.get(1).getY());
     }
 }

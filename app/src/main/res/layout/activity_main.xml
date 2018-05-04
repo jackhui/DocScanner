@@ -7,7 +7,7 @@
     <Button
         android:id="@+id/show_dialog_btn"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:text="@string/show_camera_dialog"/>
@@ -27,12 +27,35 @@
         android:layout_centerVertical="true"
         android:id="@+id/draw_view" />
 
+    <TextView
+        android:id="@+id/ocr_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"/>
+
+    <Button
+        android:id="@+id/send_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/show_dialog_btn"
+        android:text="send"/>
+
+    <Button
+        android:id="@+id/ocr_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:text="ocr"
+        android:layout_toEndOf="@+id/send_btn"/>
+
     <Button
         android:id="@+id/add_box_btn"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_toEndOf="@+id/ocr_btn"
         android:text="add box"/>
 
 </RelativeLayout>

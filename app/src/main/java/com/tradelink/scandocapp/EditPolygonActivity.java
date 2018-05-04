@@ -78,6 +78,8 @@ public class EditPolygonActivity extends AppCompatActivity {
             magnifierView = (MagnifierView) findViewById(R.id.magnifier);
             // MagifierView should be set up every time when editPolygonView is set with new image
             magnifierView.setupMagnifier(editPolygonView);
+            magnifierView.setVisibility(View.INVISIBLE);
+            editPolygonView.setVisibility(View.INVISIBLE);
 
             resultImageView = (ImageView) findViewById(R.id.resultImageView);
             resultImageView.setVisibility(View.GONE);
@@ -96,7 +98,7 @@ public class EditPolygonActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     backButton.setVisibility(View.GONE);
                     resultImageView.setVisibility(View.GONE);
-
+                    magnifierView.setVisibility(View.VISIBLE);
                     editPolygonView.setVisibility(View.VISIBLE);
                     cropButton.setVisibility(View.VISIBLE);
                 }
@@ -180,6 +182,7 @@ public class EditPolygonActivity extends AppCompatActivity {
             editPolygonView.setPolygon(initImageResult.polygon);
             if (initImageResult.linesPair != null) {
                 editPolygonView.setLines(initImageResult.linesPair.first, initImageResult.linesPair.second);
+                crop();
             }
         }
     }

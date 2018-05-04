@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Scanner</string>
-    <string name="show_camera_dialog">Show camera dialog</string>
+    <string name="show_camera_dialog">Start</string>
 </resources>

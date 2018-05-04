@@ -18,7 +18,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.tradelink.scandocapp.model.Languages;
+import com.tradelink.scandocapp.ocr.OCREngine;
 import com.tradelink.scandocapp.utils.BitmapHelper;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_CAMERA = 314;
     public static final int RESPONSE_CODE = 100;
     private ImageView croppedDocument;
+    private Bitmap croppedBitmap, ocrBitmap;
+    private Button ocrBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,15 +62,53 @@ public class MainActivity extends AppCompatActivity {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        float ratio = size.x / 210;
 
         Log.d("MainActivity", "width " + size.x + " height " + size.y);
-        drawView.setLayoutParams(new RelativeLayout.LayoutParams(size.x, (int) (a4Height * ratio)));
+        drawView.setLayoutParams(new RelativeLayout.LayoutParams(size.x, (int) (size.x * a4Height / a4Width)));
         Button addBoxBtn = findViewById(R.id.add_box_btn);
         addBoxBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 drawView.addBox();
+            }
+        });
+        final OCREngine ocrEngine = new OCREngine(this.getApplicationContext());
+        ocrEngine.unzipTessDataFile("eng.zip");
+        final TextView ocrResult = findViewById(R.id.ocr_result);
+        ocrBtn = findViewById(R.id.ocr_btn);
+        ocrBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (drawView.getRects() != null && croppedBitmap != null) {
+                    int x = drawView.getRects().get(0).getLeftTop().getX() + drawView.getRects().get(0).getLeftTop().getWidthOfBall() / 2;
+                    int y = drawView.getRects().get(0).getLeftTop().getY() + drawView.getRects().get(0).getLeftTop().getHeightOfBall() / 2;
+                    int width = drawView.getRects().get(0).getWidth();
+                    int height = drawView.getRects().get(0).getHeight();
+                    if (x < 0) {
+                        x = 0;
+                    }
+                    if (y < 0) {
+                        y = 0;
+                    }
+                    if (x + width > croppedBitmap.getWidth()) {
+                        x = 0;
+                        width = croppedBitmap.getWidth();
+                    }
+                    if (y + height > croppedBitmap.getHeight()) {
+                        y = 0;
+                        height = croppedBitmap.getHeight();
+                    }
+                    ocrBitmap = Bitmap.createBitmap(croppedBitmap, x, y, width, height);
+                    ocrResult.setText(ocrEngine.ocr(ocrBitmap, Languages.ENG));
+                    ocrBitmap.recycle();
+                }
+            }
+        });
+        Button sendBtn = findViewById(R.id.send_btn);
+        sendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), drawView.getBoxInfo(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -90,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
             if (intent.hasExtra(CameraDialogFragment.CAPTURED_IMAGE)) {
                 String imagePath = intent.getStringExtra(CameraDialogFragment.CAPTURED_IMAGE);
                 Bitmap document = BitmapHelper.getBitmapFromStorage(imagePath);
+                croppedBitmap = Bitmap.createBitmap(document);
                 croppedDocument.setImageBitmap(document);
             }
         }

@@ -3,12 +3,12 @@ package com.tradelink.scandocapp;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -48,7 +48,7 @@ public class DrawView extends View {
     protected void onDraw(Canvas canvas) {
         if(rects.size() == 0) //point4 null when user did not touch and move on screen.
             return;
-
+        Log.d("drawview", "width " + canvas.getWidth() + " height " + canvas.getHeight());
         for(int j=0; j<rects.size(); j++) {
             canvasW = canvas.getWidth();
             canvasH = canvas.getHeight();
@@ -87,7 +87,6 @@ public class DrawView extends View {
                     top + rects.get(j).getVertices().get(0).getWidthOfBall() / 2,
                     right + rects.get(j).getVertices().get(2).getWidthOfBall() / 2,
                     bottom + rects.get(j).getVertices().get(2).getWidthOfBall() / 2, paint);
-
             // draw the balls on the canvas
             paint.setColor(Color.BLUE);
             paint.setTextSize(18);
@@ -96,7 +95,6 @@ public class DrawView extends View {
                 TLKVertex ball = rects.get(j).getVertices().get(i);
                 canvas.drawBitmap(ball.getBitmap(), ball.getX(), ball.getY(),
                         paint);
-                canvas.drawText("" + (i+1), ball.getX(), ball.getY(), paint);
             }
         }
         invalidate();
@@ -169,7 +167,6 @@ public class DrawView extends View {
                             rects.get(j).setInRectangle(inRectangle(rects.get(j).getVertices(), X, Y));
                         }
                     }
-
                 }
                 previousX = X;
                 previousY = Y;
@@ -180,6 +177,7 @@ public class DrawView extends View {
                     break;
                 }
                 for(int j=0; j<rects.size(); j++) {
+                    // resize the rectangle
                     if (!rects.get(j).isInRectangle() || rectangleResize) {
                         rects.get(j).setBalID(rects.get(j).getBalID());
                         if (rects.get(j).getBalID() > -1 && rects.get(j).getBalID() < 4) {
@@ -205,6 +203,7 @@ public class DrawView extends View {
                             }
                         }
                     } else {
+                        // move the rectangle
                         if (previousX != -1 && previousY != -1) {
                             rects.get(j).getVertices().get(0).setX(rects.get(j).getVertices().get(0).getX() + (X - previousX));
                             rects.get(j).getVertices().get(0).setY(rects.get(j).getVertices().get(0).getY() + (Y - previousY));
@@ -279,5 +278,26 @@ public class DrawView extends View {
             rect.getVertices().add(new TLKVertex(getContext(), R.drawable.ui_crop_corner_handle, points[i], i));
         }
         rects.add(rect);
+    }
+
+    public String getBoxInfo() {
+        String info = "";
+        if (rects.size() != 0) {
+            for(int i=0; i<rects.size(); i++) {
+                info += "x: " + (rects.get(i).getLeftTop().getX() + rects.get(i).getLeftTop().getWidthOfBall()/2) +
+                        " y: " + (rects.get(i).getLeftTop().getY() + rects.get(i).getLeftTop().getHeightOfBall()/2) +
+                        " width: " + rects.get(i).getWidth() + " height: " + rects.get(i).getHeight() + "\n";
+            }
+        }
+        return info;
+    }
+
+    // method for fun
+
+    public ArrayList<TLKRect> getRects() {
+        if (rects.size() == 0) {
+            return null;
+        }
+        return rects;
     }
 }
